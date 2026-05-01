@@ -6,7 +6,9 @@
   "description": "NapCat / OneBot v11 group message code extraction chain validation tool.",
   "scripts": {
     "start": "node src/index.js",
-    "check": "node --check src/index.js && node --check src/config.js && node --check src/extractor.js && node --check src/store.js && node --check src/queue.js"
+    "setup": "node scripts/setup.js",
+    "doctor": "node scripts/doctor.js",
+    "check": "node --check src/index.js && node --check src/config.js && node --check src/extractor.js && node --check src/store.js && node --check src/queue.js && node --check scripts/setup.js && node --check scripts/doctor.js"
   },
   "engines": {
     "node": ">=18.0.0"

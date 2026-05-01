@@ -12,12 +12,44 @@
 npm install
 ```
 
+## 给朋友的快速启动
+
+先安装并启动 NapCat，然后在 NapCat WebUI 里启用 OneBot v11 WebSocket 服务端：
+
+```text
+类型：WebSocket 服务端
+host：127.0.0.1
+port：3001
+token：留空，第一轮测试先不填
+messagePostFormat：array
+启用：是
+```
+
+然后在本项目目录运行：
+
+```bash
+npm install
+npm run setup
+npm run doctor
+npm start
+```
+
+`npm run setup` 会生成本机专用的 `config.json`，并询问 NapCat WebSocket 地址、access token、监听群号和兑换码正则。
+
+`npm run doctor` 会检查 Node.js 版本、依赖、配置文件、`data` 目录和 NapCat WebSocket 连通性。
+
 ## 配置
 
 复制示例配置：
 
 ```bash
 cp config.example.json config.json
+```
+
+也可以使用交互式配置：
+
+```bash
+npm run setup
 ```
 
 `config.json` 字段说明：
@@ -39,6 +71,16 @@ cp config.example.json config.json
 ## NapCat WebSocket 地址
 
 在 NapCat 的 OneBot v11 配置里启用 WebSocket 服务，并把监听地址填到 `wsUrl`。
+
+NapCat WebUI 中推荐使用：
+
+```text
+类型：WebSocket 服务端
+host：127.0.0.1
+port：3001
+messagePostFormat：array
+token：可留空
+```
 
 常见本地地址示例：
 
@@ -77,6 +119,12 @@ cp config.example.json config.json
 ```
 
 ## 启动
+
+启动前可先运行检查：
+
+```bash
+npm run doctor
+```
 
 ```bash
 npm start
