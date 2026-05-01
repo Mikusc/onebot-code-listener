@@ -454,11 +454,11 @@
                 <label>兑换码形式</label>
                 <div class="code-type-grid">
                   <button id="codeModeFixed" class="choice" type="button">
-                    <strong>固定长度数字</strong>
-                    <span>例如 16 位数字</span>
+                    <strong>固定长度</strong>
+                    <span>例如 16 位</span>
                   </button>
                   <button id="codeModeRange" class="choice" type="button">
-                    <strong>长度范围数字</strong>
+                    <strong>长度范围</strong>
                     <span>例如 12 到 20 位</span>
                   </button>
                   <button id="codeModeCustom" class="choice" type="button">
@@ -468,8 +468,26 @@
                 </div>
               </div>
 
+              <div id="codeCharsetField" class="field full">
+                <label>允许字符</label>
+                <div class="code-type-grid">
+                  <button id="charsetDigits" class="choice" type="button">
+                    <strong>仅数字</strong>
+                    <span>0-9</span>
+                  </button>
+                  <button id="charsetUpper" class="choice" type="button">
+                    <strong>数字 + 大写字母</strong>
+                    <span>A-Z、0-9</span>
+                  </button>
+                  <button id="charsetMixed" class="choice" type="button">
+                    <strong>数字 + 大小写字母</strong>
+                    <span>A-Z、a-z、0-9</span>
+                  </button>
+                </div>
+              </div>
+
               <div id="fixedLengthField" class="field">
-                <label for="fixedCodeLength">数字长度</label>
+                <label for="fixedCodeLength">兑换码长度</label>
                 <input id="fixedCodeLength" type="number" min="1" max="128" step="1" inputmode="numeric" />
               </div>
 
@@ -619,6 +637,10 @@
         codeModeFixed: document.querySelector("#codeModeFixed"),
         codeModeRange: document.querySelector("#codeModeRange"),
         codeModeCustom: document.querySelector("#codeModeCustom"),
+        codeCharsetField: document.querySelector("#codeCharsetField"),
+        charsetDigits: document.querySelector("#charsetDigits"),
+        charsetUpper: document.querySelector("#charsetUpper"),
+        charsetMixed: document.querySelector("#charsetMixed"),
         fixedLengthField: document.querySelector("#fixedLengthField"),
         rangeMinField: document.querySelector("#rangeMinField"),
         rangeMaxField: document.querySelector("#rangeMaxField"),
@@ -635,6 +657,7 @@
       let lastSpecificGroupId = 0;
       let groupMode = "all";
       let codeMode = "fixed";
+      let codeCharset = "digits";
 
       ui.reload.addEventListener("click", loadConfig);
       ui.save.addEventListener("click", saveConfig);
@@ -645,6 +668,9 @@
       ui.codeModeFixed.addEventListener("click", () => setCodeMode("fixed"));
       ui.codeModeRange.addEventListener("click", () => setCodeMode("range"));
       ui.codeModeCustom.addEventListener("click", () => setCodeMode("custom"));
+      ui.charsetDigits.addEventListener("click", () => setCodeCharset("digits"));
+      ui.charsetUpper.addEventListener("click", () => setCodeCharset("upper"));
+      ui.charsetMixed.addEventListener("click", () => setCodeCharset("mixed"));
 
       for (const field of Object.values(fields)) {
         field.addEventListener("input", updateSummary);
@@ -759,6 +785,12 @@
         updateSummary();
       }
 
+      function setCodeCharset(charset) {
+        codeCharset = charset;
+        syncCodeMode();
+        updateSummary();
+      }
+
       function syncGroupMode() {
         const isAll = groupMode === "all";
 
@@ -776,7 +808,11 @@
         ui.codeModeFixed.classList.toggle("active", codeMode === "fixed");
         ui.codeModeRange.classList.toggle("active", codeMode === "range");
         ui.codeModeCustom.classList.toggle("active", codeMode === "custom");
+        ui.charsetDigits.classList.toggle("active", codeCharset === "digits");
+        ui.charsetUpper.classList.toggle("active", codeCharset === "upper");
+        ui.charsetMixed.classList.toggle("active", codeCharset === "mixed");
 
+        ui.codeCharsetField.style.display = codeMode === "custom" ? "none" : "";
         ui.fixedLengthField.style.display = codeMode === "fixed" ? "" : "none";
         ui.rangeMinField.style.display = codeMode === "range" ? "" : "none";
         ui.rangeMaxField.style.display = codeMode === "range" ? "" : "none";
@@ -821,11 +857,11 @@
 
       function getCodeRegex() {
         if (codeMode === "fixed") {
-          return `\\b\\d{${Number(fields.fixedCodeLength.value || 0)}}\\b`;
+          return `\\b${getCharsetPattern()}{${Number(fields.fixedCodeLength.value || 0)}}\\b`;
         }
 
         if (codeMode === "range") {
-          return `\\b\\d{${Number(fields.minCodeLength.value || 0)},${Number(fields.maxCodeLength.value || 0)}}\\b`;
+          return `\\b${getCharsetPattern()}{${Number(fields.minCodeLength.value || 0)},${Number(fields.maxCodeLength.value || 0)}}\\b`;
         }
 
         return fields.codeRegex.value.trim();
@@ -857,12 +893,13 @@
       }
 
       function applyCodeRegexToFriendlyFields(regex) {
-        const fixed = regex.match(/^\\b\\d\{(\d+)\}\\b$/);
-        const range = regex.match(/^\\b\\d\{(\d+),(\d+)\}\\b$/);
+        const fixed = regex.match(/^\\b(\\d|\[A-Z0-9\]|\[A-Za-z0-9\])\{(\d+)\}\\b$/);
+        const range = regex.match(/^\\b(\\d|\[A-Z0-9\]|\[A-Za-z0-9\])\{(\d+),(\d+)\}\\b$/);
 
         if (fixed) {
           codeMode = "fixed";
-          fields.fixedCodeLength.value = fixed[1];
+          codeCharset = charsetFromPattern(fixed[1]);
+          fields.fixedCodeLength.value = fixed[2];
           fields.minCodeLength.value = "12";
           fields.maxCodeLength.value = "20";
           return;
@@ -870,31 +907,71 @@
 
         if (range) {
           codeMode = "range";
+          codeCharset = charsetFromPattern(range[1]);
           fields.fixedCodeLength.value = "16";
-          fields.minCodeLength.value = range[1];
-          fields.maxCodeLength.value = range[2];
+          fields.minCodeLength.value = range[2];
+          fields.maxCodeLength.value = range[3];
           return;
         }
 
         codeMode = "custom";
+        codeCharset = "digits";
         fields.fixedCodeLength.value = "16";
         fields.minCodeLength.value = "12";
         fields.maxCodeLength.value = "20";
       }
 
       function describeCodePattern() {
+        const charsetLabel = getCharsetLabel();
+
         if (codeMode === "fixed") {
           const length = Number(fields.fixedCodeLength.value || 0);
-          return length > 0 ? `纯数字，固定 ${length} 位` : "纯数字，固定长度未填写";
+          return length > 0 ? `${charsetLabel}，固定 ${length} 位` : `${charsetLabel}，固定长度未填写`;
         }
 
         if (codeMode === "range") {
           const min = Number(fields.minCodeLength.value || 0);
           const max = Number(fields.maxCodeLength.value || 0);
-          return min > 0 && max >= min ? `纯数字，${min} 到 ${max} 位` : "纯数字，长度范围未填写";
+          return min > 0 && max >= min ? `${charsetLabel}，${min} 到 ${max} 位` : `${charsetLabel}，长度范围未填写`;
         }
 
         return "自定义正则";
+      }
+
+      function getCharsetPattern() {
+        if (codeCharset === "upper") {
+          return "[A-Z0-9]";
+        }
+
+        if (codeCharset === "mixed") {
+          return "[A-Za-z0-9]";
+        }
+
+        return "\\d";
+      }
+
+      function charsetFromPattern(pattern) {
+        if (pattern === "[A-Z0-9]") {
+          return "upper";
+        }
+
+        if (pattern === "[A-Za-z0-9]") {
+          return "mixed";
+        }
+
+        return "digits";
+      }
+
+      function getCharsetLabel() {
+        if (codeCharset === "upper") {
+          return "数字 + 大写字母";
+        }
+
+        if (codeCharset === "mixed") {
+          return "数字 + 大小写字母";
+        }
+
+        return "纯数字";
       }
 
       async function requestJson(url, options = {}) {

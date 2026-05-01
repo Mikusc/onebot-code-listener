@@ -92,8 +92,9 @@ NapCat WebSocket URL：ws://127.0.0.1:3001
 Access Token：第一轮测试留空
 监听范围：指定群，或全部群
 群号：测试群群号
-兑换码形式：固定长度数字
-数字长度：16
+兑换码形式：固定长度
+允许字符：仅数字
+兑换码长度：16
 去重文件：data/seen-codes.json
 日志文件：data/codes.log
 ```
@@ -161,7 +162,7 @@ Dashboard 和 `npm run setup` 都会写入本机专用的 `config.json`。这个
 | `wsUrl` | NapCat OneBot WebSocket 地址 |
 | `accessToken` | NapCat WebSocket token，没有就留空 |
 | `targetGroupId` | `0` 表示监听全部群；填群号表示只监听指定群 |
-| `codeRegex` | 兑换码提取规则，Dashboard 会根据“固定长度数字 / 长度范围数字 / 自定义正则”自动生成 |
+| `codeRegex` | 兑换码提取规则，Dashboard 会根据“固定长度 / 长度范围 / 允许字符 / 自定义正则”自动生成 |
 | `dedupeFile` | 历史已见兑换码文件 |
 | `outputFile` | 新兑换码日志文件 |
 | `enableClipboard` | 是否复制新兑换码到剪贴板 |
@@ -232,8 +233,9 @@ Dashboard 和 `npm run setup` 都会写入本机专用的 `config.json`。这个
 
 Dashboard 里优先使用可视化配置：
 
-- 固定长度数字：适合固定 16 位数字码。
-- 长度范围数字：适合 12 到 20 位这类长度不固定的数字码。
+- 固定长度：适合固定 16 位这类兑换码。
+- 长度范围：适合 12 到 20 位这类长度不固定的兑换码。
+- 允许字符：可选仅数字、数字 + 大写字母、数字 + 大小写字母。
 - 自定义正则：适合更复杂的格式。
 
 这几种配置最终都会保存成 `config.json` 里的 `codeRegex`。
@@ -243,6 +245,8 @@ Dashboard 里优先使用可视化配置：
 ```text
 固定 16 位数字 -> \b\d{16}\b
 12 到 20 位数字 -> \b\d{12,20}\b
+固定 16 位数字 + 大写字母 -> \b[A-Z0-9]{16}\b
+固定 16 位数字 + 大小写字母 -> \b[A-Za-z0-9]{16}\b
 ```
 
 修改后重启 `npm start`。
