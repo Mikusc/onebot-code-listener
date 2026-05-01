@@ -152,6 +152,43 @@
         gap: 8px;
       }
 
+      .code-type-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .choice {
+        min-height: 58px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        color: var(--text);
+        padding: 8px 10px;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .choice.active {
+        border-color: var(--focus);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      }
+
+      .choice strong,
+      .choice span {
+        display: block;
+      }
+
+      .choice strong {
+        font-size: 13px;
+      }
+
+      .choice span {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
       .segmented {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -328,6 +365,24 @@
         color: var(--danger);
       }
 
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .preview {
+        display: grid;
+        gap: 6px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #f8fafc;
+        padding: 10px;
+      }
+
+      .preview code {
+        overflow-wrap: anywhere;
+      }
+
       @media (max-width: 860px) {
         .layout {
           grid-template-columns: 1fr;
@@ -341,6 +396,10 @@
 
       @media (max-width: 640px) {
         .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .code-type-grid {
           grid-template-columns: 1fr;
         }
 
@@ -392,8 +451,49 @@
               </div>
 
               <div class="field full">
-                <label for="codeRegex">兑换码正则</label>
+                <label>兑换码形式</label>
+                <div class="code-type-grid">
+                  <button id="codeModeFixed" class="choice" type="button">
+                    <strong>固定长度数字</strong>
+                    <span>例如 16 位数字</span>
+                  </button>
+                  <button id="codeModeRange" class="choice" type="button">
+                    <strong>长度范围数字</strong>
+                    <span>例如 12 到 20 位</span>
+                  </button>
+                  <button id="codeModeCustom" class="choice" type="button">
+                    <strong>自定义正则</strong>
+                    <span>高级规则</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="fixedLengthField" class="field">
+                <label for="fixedCodeLength">数字长度</label>
+                <input id="fixedCodeLength" type="number" min="1" max="128" step="1" inputmode="numeric" />
+              </div>
+
+              <div id="rangeMinField" class="field">
+                <label for="minCodeLength">最短长度</label>
+                <input id="minCodeLength" type="number" min="1" max="128" step="1" inputmode="numeric" />
+              </div>
+
+              <div id="rangeMaxField" class="field">
+                <label for="maxCodeLength">最长长度</label>
+                <input id="maxCodeLength" type="number" min="1" max="128" step="1" inputmode="numeric" />
+              </div>
+
+              <div id="customRegexField" class="field full">
+                <label for="codeRegex">自定义正则</label>
                 <input id="codeRegex" type="text" autocomplete="off" spellcheck="false" />
+              </div>
+
+              <div class="field full">
+                <div class="preview">
+                  <label>当前识别规则</label>
+                  <code id="codeRegexPreview">-</code>
+                  <span id="codeRegexHint" class="hint">-</span>
+                </div>
               </div>
             </div>
           </div>
@@ -465,6 +565,10 @@
               <dd id="summaryGroup">-</dd>
             </div>
             <div>
+              <dt>兑换码形式</dt>
+              <dd id="summaryCodePattern">-</dd>
+            </div>
+            <div>
               <dt>剪贴板</dt>
               <dd id="summaryClipboard">-</dd>
             </div>
@@ -490,6 +594,9 @@
         wsUrl: document.querySelector("#wsUrl"),
         accessToken: document.querySelector("#accessToken"),
         targetGroupId: document.querySelector("#targetGroupId"),
+        fixedCodeLength: document.querySelector("#fixedCodeLength"),
+        minCodeLength: document.querySelector("#minCodeLength"),
+        maxCodeLength: document.querySelector("#maxCodeLength"),
         codeRegex: document.querySelector("#codeRegex"),
         dedupeFile: document.querySelector("#dedupeFile"),
         outputFile: document.querySelector("#outputFile"),
@@ -504,10 +611,20 @@
         message: document.querySelector("#message"),
         loadedFrom: document.querySelector("#loadedFrom"),
         summaryGroup: document.querySelector("#summaryGroup"),
+        summaryCodePattern: document.querySelector("#summaryCodePattern"),
         summaryClipboard: document.querySelector("#summaryClipboard"),
         summaryLocalSubmit: document.querySelector("#summaryLocalSubmit"),
         allGroups: document.querySelector("#allGroups"),
         oneGroup: document.querySelector("#oneGroup"),
+        codeModeFixed: document.querySelector("#codeModeFixed"),
+        codeModeRange: document.querySelector("#codeModeRange"),
+        codeModeCustom: document.querySelector("#codeModeCustom"),
+        fixedLengthField: document.querySelector("#fixedLengthField"),
+        rangeMinField: document.querySelector("#rangeMinField"),
+        rangeMaxField: document.querySelector("#rangeMaxField"),
+        customRegexField: document.querySelector("#customRegexField"),
+        codeRegexPreview: document.querySelector("#codeRegexPreview"),
+        codeRegexHint: document.querySelector("#codeRegexHint"),
         reload: document.querySelector("#reload"),
         save: document.querySelector("#save"),
         testWs: document.querySelector("#testWs"),
@@ -517,6 +634,7 @@
       let loadedFrom = "";
       let lastSpecificGroupId = 0;
       let groupMode = "all";
+      let codeMode = "fixed";
 
       ui.reload.addEventListener("click", loadConfig);
       ui.save.addEventListener("click", saveConfig);
@@ -524,6 +642,9 @@
       ui.toggleToken.addEventListener("click", toggleToken);
       ui.allGroups.addEventListener("click", () => setGroupMode("all"));
       ui.oneGroup.addEventListener("click", () => setGroupMode("specific"));
+      ui.codeModeFixed.addEventListener("click", () => setCodeMode("fixed"));
+      ui.codeModeRange.addEventListener("click", () => setCodeMode("range"));
+      ui.codeModeCustom.addEventListener("click", () => setCodeMode("custom"));
 
       for (const field of Object.values(fields)) {
         field.addEventListener("input", updateSummary);
@@ -579,6 +700,7 @@
         fields.accessToken.value = config.accessToken || "";
         fields.targetGroupId.value = String(config.targetGroupId);
         fields.codeRegex.value = config.codeRegex;
+        applyCodeRegexToFriendlyFields(config.codeRegex);
         fields.dedupeFile.value = config.dedupeFile;
         fields.outputFile.value = config.outputFile;
         fields.enableClipboard.checked = Boolean(config.enableClipboard);
@@ -602,7 +724,7 @@
           wsUrl: fields.wsUrl.value.trim(),
           accessToken: fields.accessToken.value,
           targetGroupId: groupMode === "all" ? 0 : Number(fields.targetGroupId.value || 0),
-          codeRegex: fields.codeRegex.value,
+          codeRegex: getCodeRegex(),
           dedupeFile: fields.dedupeFile.value.trim(),
           outputFile: fields.outputFile.value.trim(),
           enableClipboard: fields.enableClipboard.checked,
@@ -631,6 +753,12 @@
         updateSummary();
       }
 
+      function setCodeMode(mode) {
+        codeMode = mode;
+        syncCodeMode();
+        updateSummary();
+      }
+
       function syncGroupMode() {
         const isAll = groupMode === "all";
 
@@ -644,14 +772,30 @@
         fields.localSubmitUrl.disabled = !fields.enableLocalSubmit.checked;
       }
 
+      function syncCodeMode() {
+        ui.codeModeFixed.classList.toggle("active", codeMode === "fixed");
+        ui.codeModeRange.classList.toggle("active", codeMode === "range");
+        ui.codeModeCustom.classList.toggle("active", codeMode === "custom");
+
+        ui.fixedLengthField.style.display = codeMode === "fixed" ? "" : "none";
+        ui.rangeMinField.style.display = codeMode === "range" ? "" : "none";
+        ui.rangeMaxField.style.display = codeMode === "range" ? "" : "none";
+        ui.customRegexField.style.display = codeMode === "custom" ? "" : "none";
+      }
+
       function updateSummary() {
         const config = getForm();
+        const codeSummary = describeCodePattern();
 
         syncGroupMode();
         syncDisabledFields();
+        syncCodeMode();
 
         ui.summaryGroup.textContent =
           groupMode === "all" ? "全部群" : config.targetGroupId > 0 ? String(config.targetGroupId) : "未填写";
+        ui.summaryCodePattern.textContent = codeSummary;
+        ui.codeRegexPreview.textContent = config.codeRegex || "-";
+        ui.codeRegexHint.textContent = codeSummary;
         ui.summaryClipboard.textContent = config.enableClipboard
           ? config.clipboardCodeIndex === 0
             ? "每个新码"
@@ -671,6 +815,86 @@
         if (groupMode === "specific" && Number(fields.targetGroupId.value || 0) <= 0) {
           throw new Error("请填写要监听的群号");
         }
+
+        validateCodePattern();
+      }
+
+      function getCodeRegex() {
+        if (codeMode === "fixed") {
+          return `\\b\\d{${Number(fields.fixedCodeLength.value || 0)}}\\b`;
+        }
+
+        if (codeMode === "range") {
+          return `\\b\\d{${Number(fields.minCodeLength.value || 0)},${Number(fields.maxCodeLength.value || 0)}}\\b`;
+        }
+
+        return fields.codeRegex.value.trim();
+      }
+
+      function validateCodePattern() {
+        if (codeMode === "fixed") {
+          const length = Number(fields.fixedCodeLength.value || 0);
+
+          if (!Number.isInteger(length) || length < 1) {
+            throw new Error("请填写有效的兑换码数字长度");
+          }
+        }
+
+        if (codeMode === "range") {
+          const min = Number(fields.minCodeLength.value || 0);
+          const max = Number(fields.maxCodeLength.value || 0);
+
+          if (!Number.isInteger(min) || !Number.isInteger(max) || min < 1 || max < min) {
+            throw new Error("请填写有效的兑换码长度范围");
+          }
+        }
+
+        try {
+          new RegExp(getCodeRegex(), "g");
+        } catch (error) {
+          throw new Error(`兑换码规则无效：${error.message}`);
+        }
+      }
+
+      function applyCodeRegexToFriendlyFields(regex) {
+        const fixed = regex.match(/^\\b\\d\{(\d+)\}\\b$/);
+        const range = regex.match(/^\\b\\d\{(\d+),(\d+)\}\\b$/);
+
+        if (fixed) {
+          codeMode = "fixed";
+          fields.fixedCodeLength.value = fixed[1];
+          fields.minCodeLength.value = "12";
+          fields.maxCodeLength.value = "20";
+          return;
+        }
+
+        if (range) {
+          codeMode = "range";
+          fields.fixedCodeLength.value = "16";
+          fields.minCodeLength.value = range[1];
+          fields.maxCodeLength.value = range[2];
+          return;
+        }
+
+        codeMode = "custom";
+        fields.fixedCodeLength.value = "16";
+        fields.minCodeLength.value = "12";
+        fields.maxCodeLength.value = "20";
+      }
+
+      function describeCodePattern() {
+        if (codeMode === "fixed") {
+          const length = Number(fields.fixedCodeLength.value || 0);
+          return length > 0 ? `纯数字，固定 ${length} 位` : "纯数字，固定长度未填写";
+        }
+
+        if (codeMode === "range") {
+          const min = Number(fields.minCodeLength.value || 0);
+          const max = Number(fields.maxCodeLength.value || 0);
+          return min > 0 && max >= min ? `纯数字，${min} 到 ${max} 位` : "纯数字，长度范围未填写";
+        }
+
+        return "自定义正则";
       }
 
       async function requestJson(url, options = {}) {

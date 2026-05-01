@@ -92,7 +92,8 @@ NapCat WebSocket URL：ws://127.0.0.1:3001
 Access Token：第一轮测试留空
 监听范围：指定群，或全部群
 群号：测试群群号
-兑换码正则：\b\d{16}\b
+兑换码形式：固定长度数字
+数字长度：16
 去重文件：data/seen-codes.json
 日志文件：data/codes.log
 ```
@@ -160,7 +161,7 @@ Dashboard 和 `npm run setup` 都会写入本机专用的 `config.json`。这个
 | `wsUrl` | NapCat OneBot WebSocket 地址 |
 | `accessToken` | NapCat WebSocket token，没有就留空 |
 | `targetGroupId` | `0` 表示监听全部群；填群号表示只监听指定群 |
-| `codeRegex` | 兑换码提取正则，默认匹配 16 位数字 |
+| `codeRegex` | 兑换码提取规则，Dashboard 会根据“固定长度数字 / 长度范围数字 / 自定义正则”自动生成 |
 | `dedupeFile` | 历史已见兑换码文件 |
 | `outputFile` | 新兑换码日志文件 |
 | `enableClipboard` | 是否复制新兑换码到剪贴板 |
@@ -226,6 +227,25 @@ Dashboard 和 `npm run setup` 都会写入本机专用的 `config.json`。这个
 ```
 
 `latency_ms` 使用 OneBot 事件的 `time` 字段估算。该字段通常只有秒级精度，因此延迟值可能包含最多约 1 秒的取整误差。
+
+## 兑换码形式
+
+Dashboard 里优先使用可视化配置：
+
+- 固定长度数字：适合固定 16 位数字码。
+- 长度范围数字：适合 12 到 20 位这类长度不固定的数字码。
+- 自定义正则：适合更复杂的格式。
+
+这几种配置最终都会保存成 `config.json` 里的 `codeRegex`。
+
+常用例子：
+
+```text
+固定 16 位数字 -> \b\d{16}\b
+12 到 20 位数字 -> \b\d{12,20}\b
+```
+
+修改后重启 `npm start`。
 
 ## 剪贴板
 
@@ -309,7 +329,7 @@ npm start
 
 1. `targetGroupId` 是否填错。
 2. 监听 QQ 号是否在这个群里。
-3. 消息里是否包含符合 `codeRegex` 的内容。
+3. 消息里是否包含符合“兑换码形式 / codeRegex”的内容。
 4. 兑换码是否已经出现在 `data/seen-codes.json`。
 5. NapCat 的 `messagePostFormat` 是否为 `array`。
 
