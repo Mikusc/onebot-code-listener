@@ -33,8 +33,6 @@
 - [NapCat macOS 安装与接入教程](docs/napcat-macos.md)
 - [NapCat Windows 安装与接入教程](docs/napcat-windows.md)
 
-朋友拉取 private 仓库前，需要先被加为 GitHub collaborator，并接受邀请。
-
 ### 1. 拉取项目并安装依赖
 
 需要 Node.js 18 或更高版本。

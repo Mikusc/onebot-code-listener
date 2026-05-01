@@ -74,8 +74,6 @@ messagePostFormat：array
 
 ## 4. 拉取并配置本项目
 
-朋友需要先被加入这个 private GitHub 仓库的 collaborator，否则无法拉取。
-
 第一次使用时运行：
 
 ```bash

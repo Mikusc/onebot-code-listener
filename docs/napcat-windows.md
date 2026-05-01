@@ -17,7 +17,6 @@ QQ / NapCat -> ws://127.0.0.1:3001 -> onebot-code-listener -> data/codes.log
 - 一个测试群，建议先只在这个群里验证。
 - Node.js 18 或更高版本。
 - Git，用来拉取本项目。
-- 本项目仓库访问权限。这个仓库是 private，朋友需要先被加为 collaborator。
 
 官方入口：
 
@@ -190,8 +189,6 @@ ws://127.0.0.1:3001
 
 ## 5. 拉取本项目
 
-朋友需要先被加入这个 private GitHub 仓库的 collaborator，否则无法拉取。
-
 打开 PowerShell，运行：
 
 ```powershell
@@ -200,13 +197,11 @@ cd onebot-code-listener
 npm install
 ```
 
-如果 `git clone` 要求登录 GitHub，按浏览器提示登录被加入 collaborator 的 GitHub 账号。
+如果 `git clone` 失败，先确认仓库地址是：
 
-如果提示没有权限，先确认：
-
-- GitHub 邀请已经接受。
-- 登录的是被邀请的账号。
-- 仓库地址是 `https://github.com/Mikusc/onebot-code-listener.git`。
+```text
+https://github.com/Mikusc/onebot-code-listener.git
+```
 
 ## 6. 用 Dashboard 配置本项目
 
