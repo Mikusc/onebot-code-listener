@@ -1,0 +1,11 @@
+{
+  "wsUrl": "ws://127.0.0.1:3001",
+  "accessToken": "",
+  "targetGroupId": 0,
+  "codeRegex": "\\b\\d{16}\\b",
+  "dedupeFile": "data/seen-codes.json",
+  "outputFile": "data/codes.log",
+  "enableClipboard": false,
+  "enableLocalSubmit": false,
+  "localSubmitUrl": "http://127.0.0.1:8787/submit"
+}
