@@ -14,7 +14,11 @@ npm install
 
 ## 给朋友的快速启动
 
-先安装并启动 NapCat，然后在 NapCat WebUI 里启用 OneBot v11 WebSocket 服务端：
+朋友也是 MacBook 的话，先看这份 macOS 教程：
+
+[NapCat macOS 安装与接入教程](docs/napcat-macos.md)
+
+简要流程是：先安装并启动 NapCat，然后在 NapCat WebUI 里启用 OneBot v11 WebSocket 服务端：
 
 ```text
 类型：WebSocket 服务端
@@ -71,6 +75,8 @@ npm run setup
 ## NapCat WebSocket 地址
 
 在 NapCat 的 OneBot v11 配置里启用 WebSocket 服务，并把监听地址填到 `wsUrl`。
+
+macOS 安装和接入细节见：[docs/napcat-macos.md](docs/napcat-macos.md)
 
 NapCat WebUI 中推荐使用：
 
