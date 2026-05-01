@@ -43,6 +43,18 @@ npm start
 
 `npm run doctor` 会检查 Node.js 版本、依赖、配置文件、`data` 目录和 NapCat WebSocket 连通性。
 
+也可以打开本地 Dashboard 管理监听和本地测试推送配置：
+
+```bash
+npm run dashboard
+```
+
+浏览器打开：
+
+```text
+http://127.0.0.1:8788
+```
+
 ## 配置
 
 复制示例配置：
@@ -141,6 +153,8 @@ npm run doctor
 npm start
 ```
 
+如果使用 Dashboard 修改了配置，需要重启监听器才会生效。
+
 启动后，程序会自动创建 `data` 目录，并维护：
 
 - `data/seen-codes.json`：历史已见兑换码，用于启动后的持续去重。
@@ -183,6 +197,22 @@ npm start
 `latency_ms` 使用 OneBot 事件的 `time` 字段估算。该字段通常只有秒级精度，因此延迟值可能包含最多约 1 秒的取整误差。
 
 ## 可选功能
+
+### 本地 Dashboard
+
+运行：
+
+```bash
+npm run dashboard
+```
+
+Dashboard 默认只监听本机：
+
+```text
+http://127.0.0.1:8788
+```
+
+它可以读取和保存 `config.json`，并测试 NapCat WebSocket 连接。保存配置后，正在运行的监听器不会自动热更新，需要停止后重新执行 `npm start`。
 
 ### 复制到剪贴板
 

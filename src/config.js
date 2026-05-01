@@ -40,7 +40,22 @@ export async function loadConfig(configPath = 'config.json') {
   };
 }
 
-function normalizeConfig(config) {
+export async function saveConfig(config, configPath = 'config.json') {
+  const resolvedPath = path.resolve(process.cwd(), configPath);
+  const normalizedConfig = normalizeConfig({
+    ...DEFAULT_CONFIG,
+    ...config,
+  });
+
+  await fs.writeFile(resolvedPath, `${JSON.stringify(normalizedConfig, null, 2)}\n`, 'utf8');
+
+  return {
+    ...normalizedConfig,
+    savedTo: resolvedPath,
+  };
+}
+
+export function normalizeConfig(config) {
   const targetGroupId = Number(config.targetGroupId ?? DEFAULT_CONFIG.targetGroupId);
   const clipboardCodeIndex = Number(config.clipboardCodeIndex ?? DEFAULT_CONFIG.clipboardCodeIndex);
 

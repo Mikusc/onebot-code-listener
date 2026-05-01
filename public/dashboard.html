@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OneBot 配置 Dashboard</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7f9;
+        --panel: #ffffff;
+        --text: #17202a;
+        --muted: #64707d;
+        --line: #d9dee5;
+        --focus: #2563eb;
+        --ok: #047857;
+        --warn: #b45309;
+        --danger: #b91c1c;
+        --button: #1f2937;
+        --button-text: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 64px;
+        padding: 14px clamp(16px, 3vw, 32px);
+        border-bottom: 1px solid var(--line);
+        background: rgba(246, 247, 249, 0.96);
+        backdrop-filter: blur(8px);
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      h2 {
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 18px;
+        width: min(1180px, calc(100vw - 32px));
+        margin: 18px auto 32px;
+      }
+
+      .main-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 48px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .panel-body {
+        display: grid;
+        gap: 14px;
+        padding: 16px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .field.full {
+        grid-column: 1 / -1;
+      }
+
+      label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="password"] {
+        width: 100%;
+        min-height: 38px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #ffffff;
+        color: var(--text);
+        padding: 8px 10px;
+        outline: none;
+      }
+
+      input:focus {
+        border-color: var(--focus);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+      }
+
+      .input-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+
+      .segmented {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #eef1f5;
+      }
+
+      .segmented button {
+        min-height: 32px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+      }
+
+      .segmented button.active {
+        background: #ffffff;
+        color: var(--text);
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.08);
+      }
+
+      .switch-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 38px;
+      }
+
+      .switch {
+        position: relative;
+        width: 46px;
+        height: 26px;
+        flex: 0 0 auto;
+      }
+
+      .switch input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+      }
+
+      .switch span {
+        position: absolute;
+        inset: 0;
+        border-radius: 999px;
+        background: #cbd5e1;
+        transition: background 120ms ease;
+      }
+
+      .switch span::after {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.28);
+        content: "";
+        transition: transform 120ms ease;
+      }
+
+      .switch input:checked + span {
+        background: var(--ok);
+      }
+
+      .switch input:checked + span::after {
+        transform: translateX(20px);
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .button {
+        min-height: 38px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #ffffff;
+        color: var(--text);
+        padding: 8px 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .button.primary {
+        border-color: var(--button);
+        background: var(--button);
+        color: var(--button-text);
+      }
+
+      .button:disabled {
+        cursor: wait;
+        opacity: 0.68;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        color: var(--muted);
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .status.ok {
+        background: #d1fae5;
+        color: var(--ok);
+      }
+
+      .status.warn {
+        background: #fef3c7;
+        color: var(--warn);
+      }
+
+      .status.error {
+        background: #fee2e2;
+        color: var(--danger);
+      }
+
+      .summary {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+      }
+
+      .summary div {
+        display: grid;
+        grid-template-columns: 116px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+      }
+
+      .summary dt {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .summary dd {
+        min-width: 0;
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .message {
+        min-height: 38px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        color: var(--muted);
+        padding: 9px 10px;
+        overflow-wrap: anywhere;
+      }
+
+      .message.ok {
+        border-color: #86efac;
+        color: var(--ok);
+      }
+
+      .message.error {
+        border-color: #fecaca;
+        color: var(--danger);
+      }
+
+      @media (max-width: 860px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .summary div {
+          grid-template-columns: 1fr;
+          gap: 2px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>OneBot 配置 Dashboard</h1>
+      <div id="topStatus" class="status">未加载</div>
+    </header>
+
+    <main class="layout">
+      <div class="main-grid">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>监听配置</h2>
+          </div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="field full">
+                <label for="wsUrl">NapCat WebSocket URL</label>
+                <input id="wsUrl" type="text" autocomplete="off" spellcheck="false" />
+              </div>
+
+              <div class="field">
+                <label for="accessToken">Access Token</label>
+                <div class="input-row">
+                  <input id="accessToken" type="password" autocomplete="off" spellcheck="false" />
+                  <button id="toggleToken" class="button" type="button">显示</button>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>监听范围</label>
+                <div class="segmented">
+                  <button id="allGroups" type="button">全部群</button>
+                  <button id="oneGroup" type="button">指定群</button>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="targetGroupId">群号</label>
+                <input id="targetGroupId" type="number" min="0" step="1" inputmode="numeric" />
+              </div>
+
+              <div class="field full">
+                <label for="codeRegex">兑换码正则</label>
+                <input id="codeRegex" type="text" autocomplete="off" spellcheck="false" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>输出与去重</h2>
+          </div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="field">
+                <label for="dedupeFile">去重文件</label>
+                <input id="dedupeFile" type="text" autocomplete="off" spellcheck="false" />
+              </div>
+              <div class="field">
+                <label for="outputFile">日志文件</label>
+                <input id="outputFile" type="text" autocomplete="off" spellcheck="false" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>剪贴板</h2>
+            <label class="switch" aria-label="启用剪贴板">
+              <input id="enableClipboard" type="checkbox" />
+              <span></span>
+            </label>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label for="clipboardCodeIndex">复制第几个码</label>
+              <input id="clipboardCodeIndex" type="number" min="0" step="1" inputmode="numeric" />
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>本地测试推送</h2>
+            <label class="switch" aria-label="启用本地测试推送">
+              <input id="enableLocalSubmit" type="checkbox" />
+              <span></span>
+            </label>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label for="localSubmitUrl">Local Submit URL</label>
+              <input id="localSubmitUrl" type="text" autocomplete="off" spellcheck="false" />
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="panel">
+        <div class="panel-header">
+          <h2>状态</h2>
+        </div>
+        <div class="panel-body">
+          <dl class="summary">
+            <div>
+              <dt>配置文件</dt>
+              <dd id="loadedFrom">-</dd>
+            </div>
+            <div>
+              <dt>监听群</dt>
+              <dd id="summaryGroup">-</dd>
+            </div>
+            <div>
+              <dt>剪贴板</dt>
+              <dd id="summaryClipboard">-</dd>
+            </div>
+            <div>
+              <dt>本地推送</dt>
+              <dd id="summaryLocalSubmit">-</dd>
+            </div>
+          </dl>
+
+          <div id="message" class="message">加载中</div>
+
+          <div class="actions">
+            <button id="reload" class="button" type="button">重新加载</button>
+            <button id="testWs" class="button" type="button">测试 WebSocket</button>
+            <button id="save" class="button primary" type="button">保存配置</button>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      const fields = {
+        wsUrl: document.querySelector("#wsUrl"),
+        accessToken: document.querySelector("#accessToken"),
+        targetGroupId: document.querySelector("#targetGroupId"),
+        codeRegex: document.querySelector("#codeRegex"),
+        dedupeFile: document.querySelector("#dedupeFile"),
+        outputFile: document.querySelector("#outputFile"),
+        enableClipboard: document.querySelector("#enableClipboard"),
+        clipboardCodeIndex: document.querySelector("#clipboardCodeIndex"),
+        enableLocalSubmit: document.querySelector("#enableLocalSubmit"),
+        localSubmitUrl: document.querySelector("#localSubmitUrl"),
+      };
+
+      const ui = {
+        topStatus: document.querySelector("#topStatus"),
+        message: document.querySelector("#message"),
+        loadedFrom: document.querySelector("#loadedFrom"),
+        summaryGroup: document.querySelector("#summaryGroup"),
+        summaryClipboard: document.querySelector("#summaryClipboard"),
+        summaryLocalSubmit: document.querySelector("#summaryLocalSubmit"),
+        allGroups: document.querySelector("#allGroups"),
+        oneGroup: document.querySelector("#oneGroup"),
+        reload: document.querySelector("#reload"),
+        save: document.querySelector("#save"),
+        testWs: document.querySelector("#testWs"),
+        toggleToken: document.querySelector("#toggleToken"),
+      };
+
+      let loadedFrom = "";
+      let lastSpecificGroupId = 0;
+      let groupMode = "all";
+
+      ui.reload.addEventListener("click", loadConfig);
+      ui.save.addEventListener("click", saveConfig);
+      ui.testWs.addEventListener("click", testWebSocket);
+      ui.toggleToken.addEventListener("click", toggleToken);
+      ui.allGroups.addEventListener("click", () => setGroupMode("all"));
+      ui.oneGroup.addEventListener("click", () => setGroupMode("specific"));
+
+      for (const field of Object.values(fields)) {
+        field.addEventListener("input", updateSummary);
+        field.addEventListener("change", updateSummary);
+      }
+
+      loadConfig();
+
+      async function loadConfig() {
+        await withBusy(ui.reload, async () => {
+          const response = await requestJson("/api/config");
+          setForm(response.config);
+          loadedFrom = response.loadedFrom || "config.json 尚未创建";
+          ui.loadedFrom.textContent = loadedFrom;
+          setStatus("已加载", "ok");
+          showMessage("配置已加载", "ok");
+          updateSummary();
+        });
+      }
+
+      async function saveConfig() {
+        await withBusy(ui.save, async () => {
+          validateForm();
+          const config = getForm();
+          const response = await requestJson("/api/config", {
+            method: "POST",
+            body: JSON.stringify({ config }),
+          });
+          setForm(response.config);
+          loadedFrom = response.savedTo || loadedFrom;
+          ui.loadedFrom.textContent = loadedFrom;
+          setStatus("已保存", "ok");
+          showMessage("配置已保存；监听器重启后生效", "ok");
+          updateSummary();
+        });
+      }
+
+      async function testWebSocket() {
+        await withBusy(ui.testWs, async () => {
+          validateForm();
+          const config = getForm();
+          const response = await requestJson("/api/test-ws", {
+            method: "POST",
+            body: JSON.stringify({ config }),
+          });
+          setStatus("WebSocket 正常", "ok");
+          showMessage(response.message, "ok");
+        });
+      }
+
+      function setForm(config) {
+        fields.wsUrl.value = config.wsUrl;
+        fields.accessToken.value = config.accessToken || "";
+        fields.targetGroupId.value = String(config.targetGroupId);
+        fields.codeRegex.value = config.codeRegex;
+        fields.dedupeFile.value = config.dedupeFile;
+        fields.outputFile.value = config.outputFile;
+        fields.enableClipboard.checked = Boolean(config.enableClipboard);
+        fields.clipboardCodeIndex.value = String(config.clipboardCodeIndex);
+        fields.enableLocalSubmit.checked = Boolean(config.enableLocalSubmit);
+        fields.localSubmitUrl.value = config.localSubmitUrl;
+
+        if (Number(config.targetGroupId) > 0) {
+          groupMode = "specific";
+          lastSpecificGroupId = Number(config.targetGroupId);
+        } else {
+          groupMode = "all";
+        }
+
+        syncGroupMode();
+        syncDisabledFields();
+      }
+
+      function getForm() {
+        return {
+          wsUrl: fields.wsUrl.value.trim(),
+          accessToken: fields.accessToken.value,
+          targetGroupId: groupMode === "all" ? 0 : Number(fields.targetGroupId.value || 0),
+          codeRegex: fields.codeRegex.value,
+          dedupeFile: fields.dedupeFile.value.trim(),
+          outputFile: fields.outputFile.value.trim(),
+          enableClipboard: fields.enableClipboard.checked,
+          clipboardCodeIndex: Number(fields.clipboardCodeIndex.value || 0),
+          enableLocalSubmit: fields.enableLocalSubmit.checked,
+          localSubmitUrl: fields.localSubmitUrl.value.trim(),
+        };
+      }
+
+      function setGroupMode(mode) {
+        groupMode = mode;
+
+        if (mode === "all") {
+          const current = Number(fields.targetGroupId.value || 0);
+
+          if (current > 0) {
+            lastSpecificGroupId = current;
+          }
+
+          fields.targetGroupId.value = "0";
+        } else if (Number(fields.targetGroupId.value || 0) === 0) {
+          fields.targetGroupId.value = lastSpecificGroupId ? String(lastSpecificGroupId) : "";
+        }
+
+        syncGroupMode();
+        updateSummary();
+      }
+
+      function syncGroupMode() {
+        const isAll = groupMode === "all";
+
+        ui.allGroups.classList.toggle("active", isAll);
+        ui.oneGroup.classList.toggle("active", !isAll);
+        fields.targetGroupId.disabled = isAll;
+      }
+
+      function syncDisabledFields() {
+        fields.clipboardCodeIndex.disabled = !fields.enableClipboard.checked;
+        fields.localSubmitUrl.disabled = !fields.enableLocalSubmit.checked;
+      }
+
+      function updateSummary() {
+        const config = getForm();
+
+        syncGroupMode();
+        syncDisabledFields();
+
+        ui.summaryGroup.textContent =
+          groupMode === "all" ? "全部群" : config.targetGroupId > 0 ? String(config.targetGroupId) : "未填写";
+        ui.summaryClipboard.textContent = config.enableClipboard
+          ? config.clipboardCodeIndex === 0
+            ? "每个新码"
+            : `第 ${config.clipboardCodeIndex} 个码`
+          : "关闭";
+        ui.summaryLocalSubmit.textContent = config.enableLocalSubmit ? config.localSubmitUrl : "关闭";
+      }
+
+      function toggleToken() {
+        const showing = fields.accessToken.type === "text";
+
+        fields.accessToken.type = showing ? "password" : "text";
+        ui.toggleToken.textContent = showing ? "显示" : "隐藏";
+      }
+
+      function validateForm() {
+        if (groupMode === "specific" && Number(fields.targetGroupId.value || 0) <= 0) {
+          throw new Error("请填写要监听的群号");
+        }
+      }
+
+      async function requestJson(url, options = {}) {
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            "content-type": "application/json",
+            ...(options.headers || {}),
+          },
+        });
+        const payload = await response.json();
+
+        if (!response.ok || payload.ok === false) {
+          throw new Error(payload.error || `HTTP ${response.status}`);
+        }
+
+        return payload;
+      }
+
+      async function withBusy(button, task) {
+        const buttons = [ui.reload, ui.save, ui.testWs];
+
+        buttons.forEach((item) => {
+          item.disabled = true;
+        });
+        setStatus("处理中", "warn");
+        showMessage("处理中", "");
+
+        try {
+          await task();
+        } catch (error) {
+          setStatus("失败", "error");
+          showMessage(error.message, "error");
+        } finally {
+          buttons.forEach((item) => {
+            item.disabled = false;
+          });
+          button.blur();
+        }
+      }
+
+      function setStatus(text, type) {
+        ui.topStatus.textContent = text;
+        ui.topStatus.className = `status ${type || ""}`.trim();
+      }
+
+      function showMessage(text, type) {
+        ui.message.textContent = text;
+        ui.message.className = `message ${type || ""}`.trim();
+      }
+    </script>
+  </body>
+</html>
