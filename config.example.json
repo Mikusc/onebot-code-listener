@@ -6,6 +6,7 @@
   "dedupeFile": "data/seen-codes.json",
   "outputFile": "data/codes.log",
   "enableClipboard": false,
+  "clipboardCodeIndex": 0,
   "enableLocalSubmit": false,
   "localSubmitUrl": "http://127.0.0.1:8787/submit"
 }

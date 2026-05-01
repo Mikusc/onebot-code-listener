@@ -46,6 +46,8 @@ export class CodeStore {
       group_id: entry.groupId,
       user_id: entry.userId,
       code: entry.code,
+      code_index: entry.codeIndex,
+      code_count: entry.codeCount,
       message_summary: entry.messageSummary,
     })}\n`;
 

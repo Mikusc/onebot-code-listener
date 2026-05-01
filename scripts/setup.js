@@ -26,6 +26,7 @@ try {
   const accessToken = await askString(rl, 'Access token, leave empty if unused', defaults.accessToken);
   const targetGroupId = await askNumber(rl, 'Target group ID, 0 means all groups', defaults.targetGroupId);
   const codeRegex = await askRegex(rl, 'Code regex', defaults.codeRegex);
+  const clipboardCodeIndex = await askNumber(rl, 'Clipboard code index, 0 means every new code', defaults.clipboardCodeIndex);
 
   const config = {
     ...defaults,
@@ -34,6 +35,7 @@ try {
     targetGroupId,
     codeRegex,
     enableClipboard: Boolean(defaults.enableClipboard),
+    clipboardCodeIndex,
     enableLocalSubmit: Boolean(defaults.enableLocalSubmit),
   };
 
@@ -103,5 +105,6 @@ The script asks for:
   - optional access token
   - target group ID
   - code extraction regex
+  - clipboard code index
 `);
 }

@@ -24,6 +24,7 @@ async function main() {
   console.log(`[config] targetGroupId=${config.targetGroupId === 0 ? 'all groups' : config.targetGroupId}`);
   console.log(`[config] accessToken=${config.accessToken ? 'configured' : 'not configured'}`);
   console.log(`[config] enableClipboard=${config.enableClipboard}`);
+  console.log(`[config] clipboardCodeIndex=${config.clipboardCodeIndex === 0 ? 'every new code' : config.clipboardCodeIndex}`);
   console.log(`[config] enableLocalSubmit=${config.enableLocalSubmit}`);
 
   const queue = new AsyncQueue(async (item) => {
@@ -34,9 +35,9 @@ async function main() {
       `[code] ${item.time} group_id=${item.groupId} user_id=${item.userId} code=${item.code} latency_ms=${item.latencyMs ?? 'unknown'} message="${item.messageSummary}"`,
     );
 
-    if (config.enableClipboard) {
+    if (shouldCopyToClipboard(config, item)) {
       await copyToClipboard(item.code);
-      console.log(`[clipboard] Copied latest code: ${item.code}`);
+      console.log(`[clipboard] Copied code #${item.codeIndex}/${item.codeCount}: ${item.code}`);
     }
 
     if (config.enableLocalSubmit) {
@@ -154,7 +155,7 @@ class OneBotCodeListener {
     const latencyMs = eventTime ? receivedAt.getTime() - eventTime.getTime() : null;
     const messageSummary = summarizeMessage(text);
 
-    for (const code of codes) {
+    for (const [index, code] of codes.entries()) {
       if (!this.store.add(code)) {
         continue;
       }
@@ -166,6 +167,8 @@ class OneBotCodeListener {
         groupId: event.group_id,
         userId: event.user_id,
         code,
+        codeIndex: index + 1,
+        codeCount: codes.length,
         messageSummary,
       });
     }
@@ -186,6 +189,14 @@ class OneBotCodeListener {
 
     return String(event.group_id) === String(this.config.targetGroupId);
   }
+}
+
+function shouldCopyToClipboard(config, item) {
+  if (!config.enableClipboard) {
+    return false;
+  }
+
+  return config.clipboardCodeIndex === 0 || item.codeIndex === config.clipboardCodeIndex;
 }
 
 function getEventTime(event) {
@@ -236,9 +247,13 @@ async function submitToLocalEndpoint(url, item) {
       },
       body: JSON.stringify({
         time: item.time,
+        event_time: item.eventTime,
+        latency_ms: item.latencyMs,
         group_id: item.groupId,
         user_id: item.userId,
         code: item.code,
+        code_index: item.codeIndex,
+        code_count: item.codeCount,
         message_summary: item.messageSummary,
       }),
       signal: controller.signal,

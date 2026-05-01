@@ -68,6 +68,7 @@ npm run setup
   "dedupeFile": "data/seen-codes.json",
   "outputFile": "data/codes.log",
   "enableClipboard": false,
+  "clipboardCodeIndex": 0,
   "enableLocalSubmit": false,
   "localSubmitUrl": "http://127.0.0.1:8787/submit"
 }
@@ -173,6 +174,8 @@ npm start
   "group_id": 123456789,
   "user_id": 10001,
   "code": "1271751016725504",
+  "code_index": 1,
+  "code_count": 1,
   "message_summary": "测试兑换码 1271751016725504"
 }
 ```
@@ -187,9 +190,26 @@ npm start
 
 ```json
 {
-  "enableClipboard": true
+  "enableClipboard": true,
+  "clipboardCodeIndex": 0
 }
 ```
+
+`clipboardCodeIndex` 控制同一条消息里自动复制第几个兑换码：
+
+- `0`：默认行为，每个新兑换码都会复制，多个码会按顺序覆盖剪贴板，最后留下最后一个。
+- `3`：只复制同一条消息里提取到的第 3 个兑换码。
+
+例如一条消息里有 10 个码，但只想自动复制第 3 个：
+
+```json
+{
+  "enableClipboard": true,
+  "clipboardCodeIndex": 3
+}
+```
+
+去重仍然生效。如果第 3 个码之前已经记录过，它不会再次进入队列，也不会复制。
 
 ### 发送到本地测试接口
 
@@ -212,6 +232,8 @@ POST body 示例：
   "group_id": 123456789,
   "user_id": 10001,
   "code": "1271751016725504",
+  "code_index": 1,
+  "code_count": 1,
   "message_summary": "测试兑换码 1271751016725504"
 }
 ```

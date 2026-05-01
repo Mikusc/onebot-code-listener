@@ -9,6 +9,7 @@ export const DEFAULT_CONFIG = {
   dedupeFile: 'data/seen-codes.json',
   outputFile: 'data/codes.log',
   enableClipboard: false,
+  clipboardCodeIndex: 0,
   enableLocalSubmit: false,
   localSubmitUrl: 'http://127.0.0.1:8787/submit',
 };
@@ -41,9 +42,14 @@ export async function loadConfig(configPath = 'config.json') {
 
 function normalizeConfig(config) {
   const targetGroupId = Number(config.targetGroupId ?? DEFAULT_CONFIG.targetGroupId);
+  const clipboardCodeIndex = Number(config.clipboardCodeIndex ?? DEFAULT_CONFIG.clipboardCodeIndex);
 
   if (!Number.isFinite(targetGroupId) || targetGroupId < 0) {
     throw new Error('targetGroupId must be a non-negative number. Use 0 to listen to all groups.');
+  }
+
+  if (!Number.isInteger(clipboardCodeIndex) || clipboardCodeIndex < 0) {
+    throw new Error('clipboardCodeIndex must be a non-negative integer. Use 0 to copy every new code.');
   }
 
   assertString(config.wsUrl, 'wsUrl');
@@ -66,6 +72,7 @@ function normalizeConfig(config) {
     dedupeFile: config.dedupeFile,
     outputFile: config.outputFile,
     enableClipboard: Boolean(config.enableClipboard),
+    clipboardCodeIndex,
     enableLocalSubmit: Boolean(config.enableLocalSubmit),
     localSubmitUrl: config.localSubmitUrl,
   };
