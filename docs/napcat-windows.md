@@ -44,6 +44,14 @@ npm -v
 git -v
 ```
 
+确认系统是 64 位：
+
+```powershell
+wmic os get osarchitecture
+```
+
+如果输出是 `64-bit`，可以继续。NapCat Windows 一键包按官方说明适用于 `Windows.AMD64`，32 位 Windows 不建议使用这套流程。
+
 ## 1. 推荐安装方式：Windows 一键包
 
 官方 Windows 一键包适合第一次使用，优点是步骤少，包里已经内置 QQ 和 NapCat。
@@ -180,7 +188,7 @@ messagePostFormat：array
 ws://127.0.0.1:3001
 ```
 
-## 5. 拉取并配置本项目
+## 5. 拉取本项目
 
 朋友需要先被加入这个 private GitHub 仓库的 collaborator，否则无法拉取。
 
@@ -190,6 +198,51 @@ ws://127.0.0.1:3001
 git clone https://github.com/Mikusc/onebot-code-listener.git
 cd onebot-code-listener
 npm install
+```
+
+如果 `git clone` 要求登录 GitHub，按浏览器提示登录被加入 collaborator 的 GitHub 账号。
+
+如果提示没有权限，先确认：
+
+- GitHub 邀请已经接受。
+- 登录的是被邀请的账号。
+- 仓库地址是 `https://github.com/Mikusc/onebot-code-listener.git`。
+
+## 6. 用 Dashboard 配置本项目
+
+推荐朋友优先用 Dashboard 配置，少改 JSON 文件。
+
+在项目目录运行：
+
+```powershell
+npm run dashboard
+```
+
+浏览器打开：
+
+```text
+http://127.0.0.1:8788
+```
+
+Dashboard 里填写：
+
+```text
+NapCat WebSocket URL：ws://127.0.0.1:3001
+Access Token：第一轮测试留空
+监听范围：指定群，或全部群
+群号：测试群群号；监听全部群时不用填
+兑换码正则：\b\d{16}\b
+去重文件：data/seen-codes.json
+日志文件：data/codes.log
+剪贴板：按需要开启
+本地测试推送：按需要开启
+```
+
+点「保存配置」，再点「测试 WebSocket」。如果显示连接成功，配置就可以用于监听。
+
+也可以用命令行配置：
+
+```powershell
 npm run setup
 ```
 
@@ -216,10 +269,10 @@ codeRegex：默认即可，匹配 16 位数字
 cd onebot-code-listener
 git pull
 npm install
-npm run setup
+npm run dashboard
 ```
 
-## 6. 启动前检查
+## 7. 启动前检查
 
 运行：
 
@@ -236,7 +289,7 @@ npm run doctor
 - Node.js 版本过低：升级到 Node.js 18 或更高版本。
 - PowerShell 找不到 `node`、`npm` 或 `git`：安装后重新打开 PowerShell。
 
-## 7. 启动监听
+## 8. 启动监听
 
 保持 NapCat 终端窗口运行，再打开一个新的 PowerShell 窗口，在项目目录运行：
 
@@ -264,7 +317,9 @@ data\codes.log
 
 重复发送同一个兑换码不会再次写入，因为程序会用 `data\seen-codes.json` 去重。
 
-## 8. 常见问题
+如果用 Dashboard 修改了配置，需要停止监听器后重新执行 `npm start`。
+
+## 9. 常见问题
 
 ### `npm run doctor` 连不上
 
